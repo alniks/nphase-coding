@@ -9,68 +9,86 @@ import com.nphase.service.config.PropertiesConfigurationReader;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class FourthTaskShoppingCartService implements ShoppingCartService {
 
-    private final int DIVIDING_SCALE_VALUE = 10;
+    private static final int DIVIDING_SCALE_VALUE = 10;
 
-    private final Map<ProductCategory, Integer> numberProductsByCategory = new HashMap<>();
+    private final Map<ProductCategory, Integer> countProductsByCategory = new HashMap<>();
 
-    private final List<ProductCategory> productFordiscount = new ArrayList<>();
+    private final Map<ProductCategory, BigDecimal> totalPriceByCategory = new HashMap<>();
 
-    private ConfigurationReader configurationReader = new PropertiesConfigurationReader();
+    private final ConfigurationReader configurationReader = new PropertiesConfigurationReader();
 
     @Override
     public BigDecimal calculateTotalPrice(ShoppingCart shoppingCart) {
-
-        BigDecimal totalSum = BigDecimal.ZERO;
         List<Product> products = shoppingCart.getProducts();
-        for (Product product : products) {
-            final int quantity = product.getQuantity();
-            final ProductCategory category = product.getCategory();
 
-            Integer numberProducts = numberProductsByCategory.get(category);
-            if (numberProducts != null && numberProducts > configurationReader.getProductNumberForDiscount()) {
-                productFordiscount.add(category);
-            } else {
-                numberProducts = numberProducts + quantity;
-                numberProductsByCategory.put(category, numberProducts);
-            }
+        products.forEach(this::processProductsItems);
+
+        return calculateTotalPrice();
+    }
+
+    private void processProductsItems(Product product) {
+        countProductsItems(product);
+        countItemsTotalPrice(product);
+    }
+
+    private void countProductsItems(Product product) {
+        final ProductCategory category = product.getCategory();
+        Integer productsCount = countProductsByCategory.get(category);
+        if (productsCount == null) {
+            productsCount = 0;
         }
 
-        for (Product product : products) {
+        final int quantity = product.getQuantity();
+        final Integer updatedProductsCount = productsCount + quantity;
 
-            final BigDecimal productSum = calculateProductSum(
-                    product.getPricePerUnit(),
-                    product.getQuantity(),
-                    product.getCategory());
+        countProductsByCategory.put(category, updatedProductsCount);
+    }
 
-            totalSum = totalSum.add(productSum);
+    private void countItemsTotalPrice(Product product) {
+        final ProductCategory category = product.getCategory();
+
+        BigDecimal productsTotalPrice = totalPriceByCategory.get(category);
+        if (productsTotalPrice == null) {
+            productsTotalPrice = BigDecimal.ZERO;
+        }
+
+        final BigDecimal price = product.getPricePerUnit();
+        final int quantity = product.getQuantity();
+        final BigDecimal productsPrice = price.multiply(BigDecimal.valueOf(quantity));
+        final BigDecimal updatedTotalPrice = productsTotalPrice.add(productsPrice);
+
+        totalPriceByCategory.put(category, updatedTotalPrice);
+    }
+
+    private BigDecimal calculateTotalPrice() {
+        BigDecimal totalSum = BigDecimal.ZERO;
+
+        for (Map.Entry<ProductCategory, BigDecimal> totalPriceCategory : totalPriceByCategory.entrySet()) {
+            final ProductCategory category = totalPriceCategory.getKey();
+            BigDecimal totalPriceForCategory = totalPriceCategory.getValue();
+
+            final Integer countProducts = countProductsByCategory.get(category);
+            if (countProducts != null
+                    && countProducts > configurationReader.getProductNumberForDiscount()) {
+                final BigDecimal discountForCategory = configurationReader.getDiscountByCategory(category);
+                final BigDecimal discountPercentage = discountForCategory.divide(
+                        new BigDecimal("100"),
+                        DIVIDING_SCALE_VALUE,
+                        RoundingMode.HALF_UP);
+                final BigDecimal discountCoefficient = BigDecimal.ONE.subtract(discountPercentage);
+                totalPriceForCategory = totalPriceForCategory.multiply(discountCoefficient);
+            }
+
+            totalSum = totalSum.add(totalPriceForCategory);
         }
 
         return totalSum;
-    }
-
-
-    private BigDecimal calculateProductSum(BigDecimal price, int quantity, ProductCategory category) {
-        boolean isDiscount = productFordiscount.contains(category);
-
-        BigDecimal resultPrice = price.multiply(new BigDecimal(quantity));
-        if (isDiscount) {
-            final BigDecimal discountByCategory = configurationReader.getDiscountByCategory(category);
-            final BigDecimal discountPercentage = discountByCategory.divide(
-                    new BigDecimal("100"),
-                    DIVIDING_SCALE_VALUE,
-                    RoundingMode.HALF_UP);
-            final BigDecimal discountCoefficient = BigDecimal.ONE.subtract(discountPercentage);
-            resultPrice = resultPrice.multiply(discountCoefficient);
-        }
-
-        return resultPrice;
     }
 
 }
