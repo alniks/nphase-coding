@@ -2,12 +2,14 @@ package com.nphase.service.impl;
 
 import com.nphase.entity.Product;
 import com.nphase.entity.ShoppingCart;
+import com.nphase.service.ShoppingCartService;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-public class FirstTaskShoppingCartService {
+public class FirstTaskShoppingCartService implements ShoppingCartService {
 
+    @Override
     public BigDecimal calculateTotalPrice(ShoppingCart shoppingCart) {
 
         BigDecimal totalSum = BigDecimal.ZERO;

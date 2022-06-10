@@ -2,15 +2,17 @@ package com.nphase.service.impl;
 
 import com.nphase.entity.Product;
 import com.nphase.entity.ShoppingCart;
+import com.nphase.service.ShoppingCartService;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-public class SecondTaskShoppingCartService {
+public class SecondTaskShoppingCartService implements ShoppingCartService {
 
     private static final Integer NUMBER_PRODUCT_FOR_DISCOUNT = 3;
     private static final BigDecimal DISCOUNT_COEFF = new BigDecimal("0.9");
 
+    @Override
     public BigDecimal calculateTotalPrice(ShoppingCart shoppingCart) {
 
         BigDecimal totalSum = BigDecimal.ZERO;

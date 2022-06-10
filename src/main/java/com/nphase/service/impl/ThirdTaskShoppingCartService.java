@@ -3,6 +3,7 @@ package com.nphase.service.impl;
 import com.nphase.entity.Product;
 import com.nphase.entity.ProductCategory;
 import com.nphase.entity.ShoppingCart;
+import com.nphase.service.ShoppingCartService;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -10,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ThirdTaskShoppingCartService {
+public class ThirdTaskShoppingCartService implements ShoppingCartService {
 
     private static final Integer NUMBER_PRODUCT_FOR_DISCOUNT_IN_CATEGORY = 3;
     private static final BigDecimal DISCOUNT_COEFF = new BigDecimal("0.9");
@@ -19,6 +20,7 @@ public class ThirdTaskShoppingCartService {
 
     private final List<ProductCategory> productFordiscount = new ArrayList<>();
 
+    @Override
     public BigDecimal calculateTotalPrice(ShoppingCart shoppingCart) {
 
         BigDecimal totalSum = BigDecimal.ZERO;
