@@ -3,6 +3,7 @@ package com.nphase.entity;
 import java.util.List;
 
 public class ShoppingCart {
+
     private final List<Product> products;
 
     public ShoppingCart(List<Product> products) {
