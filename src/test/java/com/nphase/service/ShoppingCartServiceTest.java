@@ -6,8 +6,8 @@ import com.nphase.entity.ShoppingCart;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import javax.naming.OperationNotSupportedException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
 
 public class ShoppingCartServiceTest {
@@ -22,7 +22,6 @@ public class ShoppingCartServiceTest {
 
         BigDecimal result = service.calculateTotalPrice(cart);
 
-        Assertions.assertEquals(result, BigDecimal.valueOf(16.5));
+        Assertions.assertEquals(BigDecimal.valueOf(16.5).setScale(2, RoundingMode.HALF_UP), result);
     }
-
 }
