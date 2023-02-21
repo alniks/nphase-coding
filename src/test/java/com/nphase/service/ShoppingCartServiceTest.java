@@ -1,6 +1,7 @@
 package com.nphase.service;
 
 
+import com.nphase.entity.Category;
 import com.nphase.entity.Product;
 import com.nphase.entity.ShoppingCart;
 import org.junit.jupiter.api.Assertions;
@@ -16,8 +17,8 @@ public class ShoppingCartServiceTest {
     @Test
     public void calculatesPrice()  {
         ShoppingCart cart = new ShoppingCart(Arrays.asList(
-                new Product("Tea", BigDecimal.valueOf(5.0), 2),
-                new Product("Coffee", BigDecimal.valueOf(6.5), 1)
+                new Product("Tea", Category.food, BigDecimal.valueOf(5.0), 2),
+                new Product("Coffee", Category.food, BigDecimal.valueOf(6.5), 1)
         ));
 
         BigDecimal result = service.calculateTotalPrice(cart);
@@ -28,14 +29,29 @@ public class ShoppingCartServiceTest {
     @Test
     void calculatePriceWithDiscount() {
         ShoppingCart cart = new ShoppingCart(Arrays.asList(
-                new Product("Tea", BigDecimal.valueOf(2.5D), 1),
-                new Product("Coffee", BigDecimal.valueOf(1), 1),
-                new Product("Cake", BigDecimal.valueOf(4), 1),
-                new Product("Apple", BigDecimal.valueOf(2.5D), 1)
+                new Product("Tea", Category.food, BigDecimal.valueOf(2.5D), 1),
+                new Product("Coffee", Category.food, BigDecimal.valueOf(1), 1),
+                new Product("Cake", Category.drinks, BigDecimal.valueOf(4), 1),
+                new Product("Apple", Category.drinks, BigDecimal.valueOf(2.5D), 1)
         ));
 
         BigDecimal result = service.calculateTotalPrice(cart);
 
-        Assertions.assertEquals(BigDecimal.valueOf(9).setScale(2, RoundingMode.HALF_UP), result);
+        Assertions.assertEquals(BigDecimal.valueOf(10).setScale(2, RoundingMode.HALF_UP), result);
+    }
+
+    @Test
+    void calculatePriceWithCategoryDiscount() {
+        ShoppingCart cart = new ShoppingCart(Arrays.asList(
+                new Product("Tea", Category.food, BigDecimal.valueOf(3), 1),
+                new Product("Coffee", Category.drinks, BigDecimal.valueOf(4), 1),
+                new Product("Cake", Category.drinks, BigDecimal.valueOf(1), 1),
+                new Product("Cake", Category.drinks, BigDecimal.valueOf(4), 1),
+                new Product("Apple", Category.drinks, BigDecimal.valueOf(1), 1)
+        ));
+
+        BigDecimal result = service.calculateTotalPrice(cart);
+
+        Assertions.assertEquals(BigDecimal.valueOf(12).setScale(2, RoundingMode.HALF_UP), result);
     }
 }
