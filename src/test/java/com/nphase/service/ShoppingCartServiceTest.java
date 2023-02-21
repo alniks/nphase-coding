@@ -1,21 +1,35 @@
 package com.nphase.service;
 
 
+import com.nphase.DiscountConfigPropertiesParser;
+import com.nphase.discount.Discount;
 import com.nphase.entity.Category;
 import com.nphase.entity.Product;
 import com.nphase.entity.ShoppingCart;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
+import java.util.Properties;
 
 public class ShoppingCartServiceTest {
-    private final ShoppingCartService service = new ShoppingCartService();
+    private ShoppingCartService service;
+
+    @BeforeEach
+    void setUp() throws IOException {
+        DiscountConfigPropertiesParser discountParser = new DiscountConfigPropertiesParser();
+        Properties properties = new Properties();
+        properties.load(getClass().getClassLoader().getResourceAsStream("application-test.properties"));
+        Discount discount = discountParser.parse(properties);
+        service = new ShoppingCartService(discount);
+    }
 
     @Test
-    public void calculatesPrice()  {
+    public void calculatesPrice() {
         ShoppingCart cart = new ShoppingCart(Arrays.asList(
                 new Product("Tea", Category.food, BigDecimal.valueOf(5.0), 2),
                 new Product("Coffee", Category.food, BigDecimal.valueOf(6.5), 1)
